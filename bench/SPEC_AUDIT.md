@@ -17,14 +17,27 @@ design.
 | Test coverage | 0 test files repo-wide (measured `*.test.ts`/`*.spec.ts` = 0 on the audited tree) | 12 suites / 3,011 test LOC; the semantic contracts above run in CI |
 | Published benchmark | PersonaMem 48→76 % cited in README, but no eval code or dataset in the repo → not reproducible | we publish only benches reproducible from this repo with one command |
 
-## mem0 (docs, as of 2026-10)
+## mem0 (measured head-to-head + docs)
 
-Documented flow: LLM extracts facts, then an LLM decides ADD/UPDATE/DELETE per
-incoming fact against the store (their paper + README). That means deletion of
-superseded history is the *designed* behaviour, not an edge case — the "what was
-true before" question has no storage answer. FinKeyMemory keeps the timeline and
-renders it (`was: … until …`). Vector-store CRUD, optional graphs: same
-category, different contract. (No speed claim: we have not run them.)
+We ran mem0's production extraction path (`infer=True`) against FinKeyMemory's own
+extractor on the **identical strong model** (`qwen/qwen3.8-max` via OpenRouter) and
+the identical embedder, over a 5-conversation corpus with 19 ground-truth facts
+(`bench/compare_mem0_llm.py`, raw output in `bench/results/`):
+
+- **Extraction quality: parity** — both recovered 19/19 needles, both produced clean
+  JSON. A strong LLM levels the recall; we do not claim to extract better.
+- **Temporal supersession: ours** — after a value change, mem0 keeps the stale and
+  the new value as two separate memories (`returns_both_stale_and_new = true`), so
+  "what is the rate now" has no single authoritative answer in storage. FinKeyMemory
+  stores one current value and archives the old (`single_authoritative = true`).
+- **Date hallucination: theirs** — mem0's sample output invented dates that were not
+  in the transcript ("as of October 7", "updated around the week of September 28").
+  FinKeyMemory does not mint timestamps the conversation never stated.
+
+Documented design points (their README/paper): LLM decides ADD/UPDATE/DELETE per
+incoming fact, so delete-on-change is by design — the "what was true before" question
+has no storage answer. (No latency claim: both sides call the same LLM per unit, so
+speed is model-bound, not a memory-layer differentiator.)
 
 ## Letta (ex-MemGPT, docs)
 

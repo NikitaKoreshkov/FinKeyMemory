@@ -26,6 +26,7 @@ pg = ["psycopg2-binary>=2.9"]
 qdrant = ["qdrant-client>=1.7"]
 redis = ["redis>=5"]
 test = ["pytest>=8"]
+bench = ["matplotlib>=3.8", "numpy>=1.26"]
 
 [project.urls]
 Homepage = "https://github.com/NikitaKoreshkov/FinKeyMemory"

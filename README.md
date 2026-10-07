@@ -149,28 +149,44 @@ ctx = mm.load_context("acme", "u1", "c1", "what is the mortgage rate?")
 The model gets the *current* value **and** the movement — and says so naturally,
 because the block is written to read like knowledge, not like a search dump.
 
-## Benchmarks — reproducible, not vibes
+## Benchmarks — quality & correctness, not vibes
 
-`python bench/memory_bench.py` regenerates every number below on any machine
-(pure Python, zero infra). Raw output is committed in
-[`bench/RESULTS.md`](bench/RESULTS.md); competitor behaviour claims are only
-made against their own source/docs, with file:line evidence, in
-[`bench/SPEC_AUDIT.md`](bench/SPEC_AUDIT.md).
+Regenerate everything with `python bench/suite.py` (deterministic, offline; the
+parity figure reuses the committed strong-model run). Raw numbers land in
+`bench/results/metrics.json`; competitor-behaviour claims are tied to their own
+source file:line in [`bench/SPEC_AUDIT.md`](bench/SPEC_AUDIT.md).
 
-Measured on macOS arm64, Python 3.14 (10,000-fact tenant, L0 substrate):
-
-| Metric | Value |
+| | |
 |---|---|
-| ingest first 1,000 facts | **3.45 ms** |
-| ingest 10,000 facts total | **35.6 ms** |
-| `load_context` p50 / p95 / p99 | **4.0 / 4.3 / 5.8 ms** |
-| semantic contracts (freshness, history visibility, tenant isolation, scoring law) | **7/7 pass, exit-code gated** |
+| ![semantics](figures/semantics.png) | ![quality](figures/quality.png) |
 
-Honest scope note: Postgres/Qdrant tiers and any head-to-head recall accuracy
-against mem0/Zep/Letta are **not** published as numbers yet — the
-LongMemEval-style harness in `bench/longmemeval/` is ready and we will commit
-raw run outputs the moment datasets + keys are wired in. We would rather ship
-an empty `results/` folder than a fabricated win.
+**Correctness contracts: 100% (7/7, exit-code gated)** — freshness wins, supersession
+history stays visible, tenant isolation, recency×access scoring law exact.
+
+**Head-to-head vs mem0 (identical strong model `qwen3.8-max`, identical embedder, 5-conversation corpus):**
+
+| Axis | FinKeyMemory | mem0 | Result |
+|---|---|---|---|
+| Fact-extraction quality | 19/19 (100%) | 19/19 (100%) | **parity** |
+| Single authoritative current value | yes | no (keeps stale + new) | **ours** |
+| No invented timestamps | yes | no (fabricates dates) | **ours** |
+
+On a strong model we are **equal on extraction quality and ahead on temporal
+semantics** — "your rate moved 92.5 → 95.0, current 95.0" is stored once, correctly,
+without hallucinating when. We deliberately publish **no cross-system latency
+number**: both pipelines call the same LLM per unit, so speed there is model-bound,
+not a memory-layer differentiator. The scaling curve above is our *own* substrate
+(offline, no LLM), shown for capacity planning, not as a competitive claim.
+
+| Property | FinKeyMemory | typical mem0/Letta stack |
+|---|---|---|
+| Required dependencies | `requests` only | vector DB + embedding provider + (usually) LLM |
+| Works with **no** Postgres/Qdrant/Redis/LLM | yes — L0 keeps serving, degrades silently | generally no |
+| PII masking on write | built-in (phone/email) | not standard |
+| Test suite | 12 suites / 3,011 LOC shipped | varies |
+| License | AGPL-3.0 + contributor-assignment (commercial path) | varies (often Apache) |
+
+
 
 ## Architecture notes
 

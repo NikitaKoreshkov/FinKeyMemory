@@ -1,0 +1,108 @@
+{
+  "substrate_scaling": {
+    "sizes": [
+      500,
+      1000,
+      2000,
+      5000,
+      10000
+    ],
+    "ingest_total_ms": [
+      2.0,
+      3.8,
+      7.8,
+      19.8,
+      40.4
+    ],
+    "read_p50_ms": [
+      0.55,
+      0.69,
+      0.96,
+      1.93,
+      3.45
+    ],
+    "read_p95_ms": [
+      0.67,
+      0.76,
+      1.14,
+      2.3,
+      3.88
+    ]
+  },
+  "correctness_contracts": {
+    "checks": {
+      "single_authoritative": true,
+      "current_is_new": true,
+      "history_visible": true,
+      "tenant_isolation": true,
+      "access_outranks_recent": true,
+      "recent_outranks_old": true,
+      "stale_untouched": true
+    },
+    "passed": 7,
+    "total": 7,
+    "pct": 100.0
+  },
+  "semantic_matrix": [
+    {
+      "property": "Single authoritative current value",
+      "finkey": 1,
+      "mem0": 0,
+      "tencent": 0,
+      "evidence": "measured run / l1-writer.ts:285 delete"
+    },
+    {
+      "property": "Superseded history stays visible",
+      "finkey": 1,
+      "mem0": 1,
+      "tencent": 0,
+      "evidence": "measured run / physical delete"
+    },
+    {
+      "property": "No invented timestamps",
+      "finkey": 1,
+      "mem0": 0,
+      "tencent": null,
+      "evidence": "mem0 sample fabricated dates"
+    },
+    {
+      "property": "Dedup fails closed (not store-all)",
+      "finkey": 1,
+      "mem0": null,
+      "tencent": 0,
+      "evidence": "l1-dedup.ts:189 fail-open"
+    },
+    {
+      "property": "Serves reads with zero external services",
+      "finkey": 1,
+      "mem0": 0,
+      "tencent": 0,
+      "evidence": "L0 vs needs-vector-store"
+    },
+    {
+      "property": "PII masked on write",
+      "finkey": 1,
+      "mem0": 0,
+      "tencent": null,
+      "evidence": "built-in vs not documented"
+    },
+    {
+      "property": "Ships test suite (3k LOC)",
+      "finkey": 1,
+      "mem0": 1,
+      "tencent": 0,
+      "evidence": "0 test files in audited clone"
+    }
+  ],
+  "llm_parity": {
+    "model": "qwen/qwen3.8-max-0902",
+    "finkey_recall_rate": 1.0,
+    "mem0_recall_rate": 1.0,
+    "finkey_asof": {
+      "current_is_new": true,
+      "old_still_archived": true,
+      "single_authoritative": true
+    },
+    "mem0_asof_stale_and_new": true
+  }
+}

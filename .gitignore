@@ -12,3 +12,6 @@ venv/
 .DS_Store
 qdrant_data/
 redis-data/
+
+*.log
+bench/results/*.stderr

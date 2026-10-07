@@ -1,0 +1,84 @@
+{
+  "model": "qwen/qwen3.8-max-0902",
+  "embed_model": "bge-small-en-v1.5",
+  "n_convo": 5,
+  "note": "identical LLM + embedder both sides; mem0 infer=True is its production extraction path",
+  "mem0": {
+    "ingest_total_ms": 49553.2,
+    "per_convo_ms": 9910.6,
+    "needle_recall": {
+      "u_ann": {
+        "found": 4,
+        "of": 4
+      },
+      "u_ben": {
+        "found": 4,
+        "of": 4
+      },
+      "u_cara": {
+        "found": 4,
+        "of": 4
+      },
+      "u_dan": {
+        "found": 3,
+        "of": 3
+      },
+      "u_elena": {
+        "found": 4,
+        "of": 4
+      }
+    },
+    "needle_recall_rate": 1.0,
+    "asof": {
+      "returns_both_stale_and_new": true,
+      "sample": [
+        "Ann's mortgage rate was 92.5 percent as of October 7, 2026",
+        "Ann's mortgage rate was updated to 95.0 percent during the week of September 28 to October 4, 2026, increasing from the previous rate of 92.5 percent",
+        "User's name is Ann, she lives in Porto, and her favorite programming language is Elixir"
+      ]
+    }
+  },
+  "finkeymemory": {
+    "ingest_total_ms": 115118.4,
+    "per_convo_ms": 23023.7,
+    "needle_recall": {
+      "u_ann": {
+        "found": 4,
+        "of": 4,
+        "n_facts": 4,
+        "parse_ok": true
+      },
+      "u_ben": {
+        "found": 4,
+        "of": 4,
+        "n_facts": 4,
+        "parse_ok": true
+      },
+      "u_cara": {
+        "found": 4,
+        "of": 4,
+        "n_facts": 4,
+        "parse_ok": true
+      },
+      "u_dan": {
+        "found": 3,
+        "of": 3,
+        "n_facts": 3,
+        "parse_ok": true
+      },
+      "u_elena": {
+        "found": 4,
+        "of": 4,
+        "n_facts": 5,
+        "parse_ok": true
+      }
+    },
+    "needle_recall_rate": 1.0,
+    "asof": {
+      "current_is_new": true,
+      "old_still_archived": true,
+      "single_authoritative": true
+    },
+    "err": ""
+  }
+}
