@@ -46,7 +46,7 @@ class SessionMemory:
 
     Accepts a redis client on init — supports both redis-py (sync)
     and any compatible interface. Pass ``redis.Redis(...)`` or
-    ``aioredis.from_url(...)`` depending on your gateway framework.
+    ``aioredis.from_url(...)`` depending on your application stack.
     """
 
     def __init__(self, redis_client) -> None:

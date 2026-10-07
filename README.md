@@ -62,6 +62,25 @@ FinKeyMemory treats memory as a **temporal, self-maintaining hierarchy**:
 - **Built-in eval harness** (`memory_eval.py`) with case/replay primitives, so you
   can measure recall before shipping — not vibes.
 
+## The full feature map
+
+Everything above plus these, all on by default:
+
+| Feature | Module | What it gives you |
+|---|---|---|
+| Entity-hop recall | `entity_memory` | mentioning "Acme" or a person pulls multi-hop neighbours into context, no Neo4j |
+| Cognition snapshots | `cognition_snapshot` | per-turn trace of perceived intent, core need, urgency — not just text |
+| Episodic store | `episode` + `episode_codec` | events, not messages: who/what/when with stable serialization |
+| Emotional traces + voice contract | `schema.UserImpression`, `has_voice_contract` | how the user reacts and how you must speak to them persist as first-class records |
+| Conversation summaries | `summary_worker` | long chats compact themselves; raw transcripts don't eat your context |
+| Background decay scheduler | `decay` | pruning/consolidation runs on a cadence, per tenant, safely from multiple processes |
+| Dream cycle | `dream` | periodic prune + semantic dedupe + pattern mining; patterns persist as durable `pattern:<hash>` facts the next dream can reuse |
+| Heat feedback from recall | `scene_persona` + `semantic` | a fact being *used* raises its heat — memory strengthens on access, dims on neglect |
+| Parallel substrate loads | `manager.load_context` | ~12 remote round-trips run concurrently: memory adds single-digit ms to TTFT, not seconds |
+| PII mask at write | `pii` | phones/emails never persist raw into vectors |
+| Graceful degradation | everywhere | every missing backend disables exactly one layer; `python -c` demo and full production run the same code path |
+| Tenant keys | every store | `(company_id, user_id)` on all records — multi-tenant is not a paid plugin |
+
 ## Quickstart
 
 ```bash
@@ -73,6 +92,8 @@ from finkey_memory import ExtractedFact
 from finkey_memory.factory import build_memory_manager
 
 # With no URLs/env set you get a zero-infra, in-process memory:
+# facts are kept in the L0 volatile store and show up in load_context —
+# nothing is silently dropped.
 mm = build_memory_manager()
 
 mm.upsert_extracted_facts(
@@ -81,7 +102,7 @@ mm.upsert_extracted_facts(
 )
 
 ctx = mm.load_context("acme", "u1", "c1", "where should we travel?")
-print(ctx.memory_prompt_block())   # dated, self-contained block for your system prompt
+print(ctx.memory_prompt_block)   # property — dated, self-contained block for your system prompt
 ```
 
 Production wiring is env-driven — point it at real backends and the same code
@@ -128,6 +149,29 @@ ctx = mm.load_context("acme", "u1", "c1", "what is the mortgage rate?")
 The model gets the *current* value **and** the movement — and says so naturally,
 because the block is written to read like knowledge, not like a search dump.
 
+## Benchmarks — reproducible, not vibes
+
+`python bench/memory_bench.py` regenerates every number below on any machine
+(pure Python, zero infra). Raw output is committed in
+[`bench/RESULTS.md`](bench/RESULTS.md); competitor behaviour claims are only
+made against their own source/docs, with file:line evidence, in
+[`bench/SPEC_AUDIT.md`](bench/SPEC_AUDIT.md).
+
+Measured on macOS arm64, Python 3.14 (10,000-fact tenant, L0 substrate):
+
+| Metric | Value |
+|---|---|
+| ingest first 1,000 facts | **3.45 ms** |
+| ingest 10,000 facts total | **35.6 ms** |
+| `load_context` p50 / p95 / p99 | **4.0 / 4.3 / 5.8 ms** |
+| semantic contracts (freshness, history visibility, tenant isolation, scoring law) | **7/7 pass, exit-code gated** |
+
+Honest scope note: Postgres/Qdrant tiers and any head-to-head recall accuracy
+against mem0/Zep/Letta are **not** published as numbers yet — the
+LongMemEval-style harness in `bench/longmemeval/` is ready and we will commit
+raw run outputs the moment datasets + keys are wired in. We would rather ship
+an empty `results/` folder than a fabricated win.
+
 ## Architecture notes
 
 | Layer | Storage | Authority |
@@ -139,7 +183,7 @@ because the block is written to read like knowledge, not like a search dump.
 | ⟲ dream | background worker | prune / dedupe / mine / consolidate |
 
 Backends are probed at startup and all optional; the manager exposes one
-`load_context()` → `memory_prompt_block()` path regardless of what's wired.
+`load_context()` → `memory_prompt_block` path regardless of what's wired.
 Fact extraction from raw conversations is pluggable: build an
 `AsyncExtractorRunner` with your own recent-turns provider and attach it via
 `mm.set_extractor_runner(...)` — or just upsert `ExtractedFact`s yourself.

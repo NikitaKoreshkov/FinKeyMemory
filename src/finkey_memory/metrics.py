@@ -4,10 +4,10 @@
 Лёгкие метрики и структурированные логи для слоя памяти (Phase 7).
 
 Зачем не сразу ``prometheus_client``:
-  * AI-core не должен тянуть HTTP-зависимость; HTTP-эндпоинт делает сайт.
+  * Пакет не тянет HTTP-зависимость; эндпоинт публикует приложение-обёртка.
   * В тестах удобно иметь in-process registry с детерминированным состоянием.
   * Когда ``prometheus_client`` всё-таки доступен — автоматически зеркалим в него,
-    чтобы сайту достаточно было ``prometheus_client.exposition.generate_latest()``.
+    чтобы приложению достаточно было ``prometheus_client.exposition.generate_latest()``.
 
 Что предоставляется:
   * ``Counter``, ``Gauge``, ``Histogram`` — потокобезопасные с лейблами.
@@ -338,7 +338,7 @@ LOAD_CONTEXT_LATENCY   = REGISTRY.histogram("finkey_memory_load_context_seconds"
 
 def snapshot() -> dict:
     """
-    Возвращает чистый дикт состояния — удобно в тестах и в HTTP-эндпоинте сайта.
+    Возвращает чистый дикт состояния — удобно в тестах и в вашем HTTP-эндпоинте.
 
     Формат:
       {

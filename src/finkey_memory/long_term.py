@@ -16,7 +16,7 @@ FinKey long-term memory — PostgreSQL adapter (канонический сло�
 Главное отличие — все записи под FK-ограничениями. Если callsite не вызвал
 ``product_store.ensure_tenant_user`` заранее, адаптер делает это сам (ленивый upsert):
 ``companies (id=company_id)`` и ``users (company_id, external_id)`` создаются,
-если их ещё нет — благодаря этому старый external_id-flow gateway / CLI продолжает
+если их ещё нет — благодаря этому старый external_id-flow вызывающий код продолжает
 работать без явного auth-этапа.
 
 Подключение: ``conn_factory`` — callable, возвращающий PEP 249 connection

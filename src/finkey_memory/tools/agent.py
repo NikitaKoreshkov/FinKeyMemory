@@ -25,7 +25,7 @@ CompleterFn = Callable[..., dict]
 
 @dataclass
 class MemoryToolBundle:
-    """Structured outcome for gateway prompt injection."""
+    """Structured outcome for host-app prompt injection."""
 
     block_text: str
     had_tool_calls: bool

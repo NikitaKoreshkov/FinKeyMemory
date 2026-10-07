@@ -5,7 +5,7 @@ FinKey memory tools — OpenAI-format function calling for model-driven memory.
 
 * ``schema.MEMORY_TOOLS`` — tool definitions.
 * ``dispatcher.MemoryToolDispatcher`` — executes tool calls (PG + Qdrant + RAG).
-* ``agent.MemoryToolAgent`` — short preflight with ``tool_choice=auto`` (gateway wires LLM).
+* ``agent.MemoryToolAgent`` — short preflight with ``tool_choice=auto`` (host app wires LLM).
 
 See module docstring in ``schema.py`` / ``agent.py`` for design notes.
 """

@@ -302,7 +302,7 @@ class MemoryManager:
 
         Completer берём тем же путём, что и экстрактор
         (``llm_completer.build_extractor_completer_from_env``): второго
-        самописного gateway-клиента в памяти быть не должно. Если бэкенда реально
+        второго самописного LLM-клиента в памяти быть не должно. Если бэкенда реально
         нет (ни ключей, ни локального Ollama) — падение ловится на вызове, сервис
         продолжает работать без генерации и оставляет строки нетронутыми.
         """
@@ -348,13 +348,34 @@ class MemoryManager:
         facts,
     ):
         """
-        Публичный фасад для сайта/воркеров: пишет факты через ``FactStore``.
+        Public facade: writes facts through ``FactStore`` (PG + vectors + L0).
 
-        Возвращает ``UpsertReport`` или ``None``, если PG недоступен.
+        Without PostgreSQL the facts are still stored in the in-process L0
+        volatile store (per tenant, visible to ``load_context``) — nothing is
+        silently dropped; ``UpsertReport.volatile_ok`` counts those writes.
+        Durable L1 history, as-of archive, scenes and persona need PG.
         """
         fs = self.fact_store
         if fs is None:
-            return None
+            from .fact_store import UpsertReport
+
+            report = UpsertReport(accepted=len(facts))
+            for fact in facts:
+                try:
+                    self._volatile.upsert_fact(
+                        company_id, user_id,
+                        fact.key_normalized,
+                        fact.value,
+                        confidence = float(fact.confidence),
+                        source     = str(fact.source or "inferred"),
+                        priority   = float(fact.priority),
+                        expires_at = getattr(fact, "expires_at", None),
+                    )
+                    report.volatile_ok += 1
+                    report.written_keys.append(fact.key_normalized)
+                except Exception as exc:  # noqa: BLE001
+                    report.errors.append(str(exc))
+            return report
         report = fs.upsert_extracted_facts(
             company_id=company_id,
             user_id=user_id,
@@ -858,7 +879,7 @@ class MemoryManager:
                 logger.warning("MemoryExtractor schedule failed: %s", exc)
 
     def shutdown(self, *, wait: bool = False) -> None:
-        """Корректно остановить background-runner-ы (для graceful shutdown gateway)."""
+        """Корректно остановить background-runner-ы (для graceful shutdown)."""
         if self._extractor_runner is not None:
             try:
                 self._extractor_runner.shutdown(wait=wait)

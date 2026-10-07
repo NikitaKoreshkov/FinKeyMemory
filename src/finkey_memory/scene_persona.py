@@ -636,7 +636,7 @@ class ScenePersonaService:
     """
     Единая точка входа L2/L3: чтение для ``load_context``, писанина для dream-цикла.
 
-    ``completer`` — тот же gateway-путь, что у экстрактора
+    ``completer`` — тот же путь, что у экстрактора
     (``llm_completer.build_extractor_completer_from_env``); ``None`` = LLM нет →
     генерация пропускается, хранилище остаётся нетронутым.
     """

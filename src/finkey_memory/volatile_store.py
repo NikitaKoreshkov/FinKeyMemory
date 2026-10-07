@@ -34,7 +34,7 @@ def _now() -> datetime:
 class VolatileKnowledgeStore:
     """
     Tenant-scoped in-process store.
-    Suitable for gateways without DATABASE_URL until you persist via adapter.
+    Suitable for deployments without DATABASE_URL until you persist via adapter.
     """
 
     def __init__(

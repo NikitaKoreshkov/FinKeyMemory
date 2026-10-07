@@ -78,7 +78,7 @@ def merge_fact_versions(
         if incoming_value.strip() and incoming_value.strip() != existing_value.strip():
             alt = incoming_value.strip()[:280]
             if alt not in chosen_value:
-                chosen_value += f"\n(альтернатива: {alt})"
+                chosen_value += f"\n(alternative: {alt})"
 
     chosen_confidence = max(0.05, min(0.99, float(chosen_confidence)))
     return chosen_value.strip(), chosen_confidence, chosen_src

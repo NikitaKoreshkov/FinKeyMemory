@@ -48,7 +48,7 @@ def _default_ssl_context() -> ssl.SSLContext:
     На свежих сборках macOS / Python 3.14 системные CA-roots для urllib часто
     отсутствуют — handshake к ``openrouter.ai`` падает с
     ``CERTIFICATE_VERIFY_FAILED``. Берём пакет ``certifi`` (всегда есть в venv
-    gateway), если он импортируется; иначе — системный default.
+    host app), если он импортируется; иначе — системный default.
     """
     try:
         import certifi  # type: ignore
@@ -60,7 +60,7 @@ def _default_ssl_context() -> ssl.SSLContext:
 
 _SSL_CTX = _default_ssl_context()
 
-# Keep in sync with llm-gateway openrouter_provider._QWEN3_HYBRID_THINK_PREFIXES.
+# Qwen3 hybrid thinking prefixes observed on OpenRouter completions.
 # qwen/qwen3.7-flash is the VPS default: without effort=none it spends the whole
 # max_tokens budget on hidden reasoning and leaves content empty.
 _QWEN3_HYBRID_THINK_PREFIXES = (
@@ -316,7 +316,8 @@ def _extract_openrouter_assistant_text(message: dict | None, *, json_mode: bool)
         return reasoning
     if content:
         return content
-    return reasoning
+    # Plain-text mode: never surface chain-of-thought as the answer.
+    return ""
 
 
 

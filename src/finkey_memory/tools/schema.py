@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 FinKey
 """OpenAI-format tool definitions for model-driven memory access.
 
-Preflight runs in the llm-gateway in parallel with web search and MindEngine; the
+Preflight runs host-side in parallel with other context builders; the
 chat model decides via ``tool_choice: auto`` whether to invoke any tool — no
 language-specific trigger lists.
 """
