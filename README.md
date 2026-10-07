@@ -39,6 +39,25 @@ FinKeyMemory treats memory as a **temporal, self-maintaining hierarchy**:
      ⟲ Dream worker: decay, dedupe, pattern mining, L2/L3 regeneration
 ```
 
+## What this is (and what it isn't)
+
+**This is the memory layer, not a RAG pipeline.** It stores and recalls what is
+true *about this user over time* (facts, scenes, persona) — it does not index your
+documents. **RAG is optional and pluggable:** if you already have a knowledge-base
+retriever, attach it with `mm.set_rag_engine(engine)` and its hits get merged into
+`load_context(...)` alongside memory; with no engine set, memory runs completely
+on its own. (The retrieval/RAG side lives in a separate FinKey component — this
+package deliberately keeps them decoupled.)
+
+**The model decides *what* to remember; code decides *how and where*.** After a few
+turns, `MemoryExtractor` makes one cheap LLM call that reads the conversation and
+proposes normalized facts — `{key, value, category, confidence, evidence}` — i.e. the
+LLM chooses *which* details are worth keeping and how to phrase them. The code then
+owns every storage decision the model must not be trusted with: dedup/conflict
+resolution, supersession + as-of archive, PII masking, tenant scoping
+(`company_id`/`user_id`), and the scoring law. The LLM never writes heat, validity
+windows, or the persona directly (see below).
+
 ## What makes it different
 
 - **Supersede ≠ delete.** When a fact changes, the old value is archived, not
